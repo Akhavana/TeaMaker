@@ -129,8 +129,8 @@ void loop() {
 
     case 1: // IDLE
       Serial.println("state 1: idling");
-
-      if (CheckForButtonPress() ) {
+      Serial.println(CheckForButtonPress());
+      if (CheckForButtonPress()) {
         //userSelectFlag == false;
         buttonIsPressed = false;
         Serial.println("button press");
@@ -343,11 +343,14 @@ bool CheckForButtonPress() { //debounced button
     
     Serial.println("Received: " + message);
     if (message == "1") { 
+      Serial.println("Hello");
       return true; 
     }
-    return false; 
+    else {
+      return false; 
+    } 
   }
-  return false; 
+  // return false; 
   
 
   // if (buttonIsPressed == true && DEBOUNCINGflag == false) {
