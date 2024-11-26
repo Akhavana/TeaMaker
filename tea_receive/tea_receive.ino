@@ -1,4 +1,5 @@
 // Pins
+// github version
 #define UPIN 12 //button input
 #define BIN_1 26 //motor 1
 #define BIN_2 25 //motor 2
@@ -55,7 +56,10 @@ hw_timer_t* timer1 = NULL; // encoder
 hw_timer_t* timer2 = NULL; //tea
 portMUX_TYPE timerMux0 = portMUX_INITIALIZER_UNLOCKED;
 portMUX_TYPE timerMux1 = portMUX_INITIALIZER_UNLOCKED;
-
+int counter = 0; 
+int numSamplesForTare = 3; 
+float tareTotal = 0; 
+float tareValue = 0; 
 HardwareSerial mySerial(2);
 // %%% ISRs %%%%
 void IRAM_ATTR onTime1() { //encoder speed readoutt
@@ -118,6 +122,21 @@ void setup() {
   timer2 = timerBegin(1000000);            // button debouncing timer
   timerAttachInterrupt(timer2, &onTime2); 
   timerAlarm(timer2, 10000000, true, 0); 
+
+  while (counter <= numSamplesForTare) { 
+    tareTotal += checkScale(); 
+    counter += 1; 
+  }
+  Serial.print("tareTotal = "); 
+  Serial.println(tareTotal); 
+  Serial.print("counter = "); 
+  Serial.println(counter); 
+
+  tareValue = tareTotal/(counter); 
+  Serial.print("tareValue = ");
+  Serial.println(tareValue); 
+  
+
 }
 
 // %%%%%%%%%%%%%%%%%%%%%%%% MAIN LOOP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -342,7 +361,7 @@ bool CheckForButtonPress() { //debounced button
     String message = mySerial.readStringUntil('\n');
     
     Serial.println("Received: " + message);
-    if (message == "1") { 
+    if (message.toInt() == 1) { 
       Serial.println("Hello");
       return true; 
     }
