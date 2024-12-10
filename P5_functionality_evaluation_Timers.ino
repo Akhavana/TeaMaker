@@ -29,7 +29,7 @@ int cupsOfTea = 1;
 
 
 // State Machine
-byte state = 1; 
+byte state = 4; 
 //volatile bool userSelectFlag = false;
 volatile bool brewedTeaFlag = false;
 volatile bool buttonIsPressed = false;
@@ -57,8 +57,8 @@ const int NOM_PWM_VOLTAGE = 150;
 volatile int count = 0;                  // encoder count
 volatile bool deltaT = false;            // check timer interrupt for encoder count
 hw_timer_t * timer0 = NULL; // button debouncer
-hw_timer_t* timer1 = NULL; // encoder
-hw_timer_t* timer2 = NULL; //tea
+hw_timer_t * timer1 = NULL; // encoder
+hw_timer_t * timer2 = NULL; //tea
 portMUX_TYPE timerMux0 = portMUX_INITIALIZER_UNLOCKED;
 portMUX_TYPE timerMux1 = portMUX_INITIALIZER_UNLOCKED;
 int counter = 0; 
@@ -130,7 +130,7 @@ void setup() {
   
   timer1 = timerBegin(1000000);            // Encoder readout timer: Set timer frequency to 1Mhz
   timerAttachInterrupt(timer1, &onTime1);  // Attach onTimer1 function to our timer.
-  timerAlarm(timer1, 10000, true, 0);      // 10000 * 1 us = 10 ms, autoreload true
+  timerAlarm(timer1, 1000000, true, 0);      // 10000 * 1 us = 10 ms, autoreload true
 
   pinMode(UPIN, INPUT); 
   timer0 = timerBegin(1000000);            // button debouncing timer
@@ -239,8 +239,8 @@ void loop() {
         stopWater();
         //brewTimerTea();
         state = 5;
-        timerWrite(timer1, 0); // Reset timer count
-        timerAlarmEnable(timer1);
+        timerWrite(timer2, 0); // Reset timer count
+        timerStart(timer2);
       }
       break;
 
@@ -270,8 +270,9 @@ void loop() {
     //     timerStart(timer1);      // Enable the timer alarm
     // }
 
-    if (brewTimeComplete) {            // Check if brewing time is done
+    if (brewedTeaFlag) {            // Check if brewing time is done
         brewTimeComplete = false;      // Reset the flag
+
         // timerAlarmDisable(timer1);;     // Disable the timer
         state = 6;                     // Move to the next state
     }
@@ -300,14 +301,13 @@ void loop() {
     case 6: // DISPENSING TEA
     Serial.println("state 6: Tea done!!!");
 
-    if (!timerStart(timer1)) {  // Reuse timer2 for tea done
-        timerWrite(timer1, 0);         // Reset the timer count
-        timerStart(timer1);      // Enable the timer alarm
-    }
+    // if (!timerStart(timer1)) {  // Reuse timer2 for tea done
+    //     timerWrite(timer1, 0);         // Reset the timer count
+    //     timerStart(timer1);      // Enable the timer alarm
+    // }
 
     if (teaDoneComplete) {             // Check if tea dispensing is complete
-        teaDoneComplete = false;       // Reset the flag
-        timerAlarmDisable(timer1);     // Disable the timer
+        teaDoneComplete = false;       // Reset the flag     // Disable the timer
         state = 1;                     // Return to idle state
     }
     break;
@@ -549,7 +549,3 @@ bool CheckForButtonPress() { //debounced button
   }
   
   }
-
-  
-  
-
