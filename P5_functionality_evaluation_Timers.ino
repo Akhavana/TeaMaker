@@ -1,3 +1,4 @@
+#include <Arduino.h>
 // Pins
 #define UPIN 12 //button input
 #define BIN_3 27 //motor 2A
@@ -15,9 +16,9 @@ HX711 scale;
 #define TXD1 8
 #define RXD1 7
 
-t3= 15       //timer0
-t1= 10;     //timer1
-t2= 20;     //timer2
+// int timer3= 20;       //timer0
+// int timer1= 20;     //timer1
+// int timer2= 10;     //timer2
 
 // Tea Variables (changeable by user)
 int brewTime = 90; //seconds
@@ -238,6 +239,8 @@ void loop() {
         stopWater();
         //brewTimerTea();
         state = 5;
+        timerWrite(timer1, 0); // Reset timer count
+        timerAlarmEnable(timer1);
       }
       break;
 
@@ -262,14 +265,14 @@ void loop() {
     case 5: // BREWING TEA
     Serial.println("state 5: brewing tea");
 
-    if (!timerAlarmEnabled(timer2)) {  // Start the timer only once
-        timerWrite(timer2, 0);         // Reset the timer count
-        timerAlarmEnable(timer2);      // Enable the timer alarm
-    }
+    // if (!timerStart(timer1)) {  // Start the timer only once
+    //     timerWrite(timer1, 0);         // Reset the timer count
+    //     timerStart(timer1);      // Enable the timer alarm
+    // }
 
     if (brewTimeComplete) {            // Check if brewing time is done
         brewTimeComplete = false;      // Reset the flag
-        timerAlarmDisable(timer2);     // Disable the timer
+        // timerAlarmDisable(timer1);;     // Disable the timer
         state = 6;                     // Move to the next state
     }
     break;
@@ -297,14 +300,14 @@ void loop() {
     case 6: // DISPENSING TEA
     Serial.println("state 6: Tea done!!!");
 
-    if (!timerAlarmEnabled(timer2)) {  // Reuse timer2 for tea done
-        timerWrite(timer2, 0);         // Reset the timer count
-        timerAlarmEnable(timer2);      // Enable the timer alarm
+    if (!timerStart(timer1)) {  // Reuse timer2 for tea done
+        timerWrite(timer1, 0);         // Reset the timer count
+        timerStart(timer1);      // Enable the timer alarm
     }
 
     if (teaDoneComplete) {             // Check if tea dispensing is complete
         teaDoneComplete = false;       // Reset the flag
-        timerAlarmDisable(timer2);     // Disable the timer
+        timerAlarmDisable(timer1);     // Disable the timer
         state = 1;                     // Return to idle state
     }
     break;
